@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import * as auth from "../auth/auth";
 import {
@@ -139,20 +145,34 @@ export function AdminPage() {
     if (!Number.isInteger(eventoId) || eventoId <= 0) return dados;
 
     const eventos = dados.eventos.filter((evento) => evento.id === eventoId);
-    const equipes = dados.equipes.filter((equipe) => equipe.idEvento === eventoId);
-    const categorias = dados.categorias.filter((categoria) => categoria.idEvento === eventoId);
+    const equipes = dados.equipes.filter(
+      (equipe) => equipe.idEvento === eventoId,
+    );
+    const categorias = dados.categorias.filter(
+      (categoria) => categoria.idEvento === eventoId,
+    );
     const categoriaIds = new Set(categorias.map((categoria) => categoria.id));
-    const jurados = dados.jurados.filter((jurado) => jurado.idEvento === eventoId);
+    const jurados = dados.jurados.filter(
+      (jurado) => jurado.idEvento === eventoId,
+    );
     const juradoIds = new Set(jurados.map((jurado) => jurado.id));
 
     return {
       eventos,
       equipes,
       categorias,
-      criterios: dados.criterios.filter((criterio) => categoriaIds.has(criterio.idCategoria)),
+      criterios: dados.criterios.filter((criterio) =>
+        categoriaIds.has(criterio.idCategoria),
+      ),
       jurados,
-      vinculacoes: dados.vinculacoes.filter((vinculo) => juradoIds.has(vinculo.idJurado) || categoriaIds.has(vinculo.idCategoria)),
-      movimentacoes: dados.movimentacoes.filter((movimentacao) => movimentacao.idEvento === eventoId),
+      vinculacoes: dados.vinculacoes.filter(
+        (vinculo) =>
+          juradoIds.has(vinculo.idJurado) ||
+          categoriaIds.has(vinculo.idCategoria),
+      ),
+      movimentacoes: dados.movimentacoes.filter(
+        (movimentacao) => movimentacao.idEvento === eventoId,
+      ),
     };
   }, [dados, eventoSelecionadoId]);
   const eventosAtivos = dadosVisiveis.eventos.filter((evento) => evento.ativo);
@@ -162,16 +182,26 @@ export function AdminPage() {
       <header className="topbar">
         <div>
           <p className="eyebrow">ADMINISTRAÇÃO</p>
-          <h1>Espanglish</h1>
+          <h1>EVENTOS - CNSF</h1>
         </div>
         <div className="topbar-actions">
-          <label className="event-filter">Evento
-            <select value={eventoSelecionadoId} onChange={(event) => setEventoSelecionadoId(event.target.value)}>
+          <label className="event-filter">
+            Evento
+            <select
+              value={eventoSelecionadoId}
+              onChange={(event) => setEventoSelecionadoId(event.target.value)}
+            >
               <option value="">Todos os eventos</option>
-              {dados.eventos.map((evento) => <option key={evento.id} value={evento.id}>{evento.nome} ({evento.competencia})</option>)}
+              {dados.eventos.map((evento) => (
+                <option key={evento.id} value={evento.id}>
+                  {evento.nome} ({evento.competencia})
+                </option>
+              ))}
             </select>
           </label>
-          <button className="secondary" onClick={sair}>Sair</button>
+          <button className="secondary" onClick={sair}>
+            Sair
+          </button>
         </div>
       </header>
       <nav className="tabs" aria-label="Módulos">
@@ -211,7 +241,9 @@ export function AdminPage() {
         <p className="loading">Carregando dados…</p>
       ) : (
         <section className="workspace">
-          {aba === "eventos" && <Eventos dados={dadosVisiveis} salvar={salvar} />}
+          {aba === "eventos" && (
+            <Eventos dados={dadosVisiveis} salvar={salvar} />
+          )}
           {aba === "equipes" && (
             <Equipes
               eventos={eventosAtivos}
@@ -255,7 +287,9 @@ export function AdminPage() {
               salvar={salvar}
             />
           )}
-          {aba === "relatorios" && <Relatorios eventos={dadosVisiveis.eventos} />}
+          {aba === "relatorios" && (
+            <Relatorios eventos={dadosVisiveis.eventos} />
+          )}
         </section>
       )}
     </main>
@@ -308,7 +342,8 @@ function Eventos({
             <tr>
               <th>Nome</th>
               <th>Período</th>
-              <th>Status</th><th>Ações</th>
+              <th>Status</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -355,32 +390,41 @@ function Eventos({
                     {item.ativo ? "Ativo" : "Inativo"}
                   </button>
                 </td>
-                <td><button className="secondary" onClick={() => setEditando(item)}>Editar</button></td>
+                <td>
+                  <button
+                    className="secondary"
+                    onClick={() => setEditando(item)}
+                  >
+                    Editar
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       }
     >
-      <form key={editando?.id ?? "novo"}
+      <form
+        key={editando?.id ?? "novo"}
         onSubmit={(event) => {
           event.preventDefault();
           const form = new FormData(event.currentTarget);
           void salvar(
-            () => editando
-              ? atualizarEvento(editando.id, {
-                nome: String(form.get("nome")).trim(),
-                competencia: number(form.get("competencia")),
-                dataInicio: String(form.get("inicio")),
-                dataFim: String(form.get("fim")),
-                ativo: editando.ativo,
-              })
-              : criarEvento({
-                  nome: String(form.get("nome")).trim(),
-                  competencia: number(form.get("competencia")),
-                  dataInicio: String(form.get("inicio")),
-                  dataFim: String(form.get("fim")),
-                }),
+            () =>
+              editando
+                ? atualizarEvento(editando.id, {
+                    nome: String(form.get("nome")).trim(),
+                    competencia: number(form.get("competencia")),
+                    dataInicio: String(form.get("inicio")),
+                    dataFim: String(form.get("fim")),
+                    ativo: editando.ativo,
+                  })
+                : criarEvento({
+                    nome: String(form.get("nome")).trim(),
+                    competencia: number(form.get("competencia")),
+                    dataInicio: String(form.get("inicio")),
+                    dataFim: String(form.get("fim")),
+                  }),
             editando ? "Evento atualizado." : "Evento criado com sucesso.",
           );
           setEditando(null);
@@ -389,7 +433,12 @@ function Eventos({
       >
         <label>
           Nome
-          <input name="nome" maxLength={100} defaultValue={editando?.nome} required />
+          <input
+            name="nome"
+            maxLength={100}
+            defaultValue={editando?.nome}
+            required
+          />
         </label>
         <div className="form-grid">
           <label>
@@ -405,15 +454,35 @@ function Eventos({
           </label>
           <label>
             Início
-            <input name="inicio" type="date" defaultValue={editando?.dataInicio.slice(0, 10)} required />
+            <input
+              name="inicio"
+              type="date"
+              defaultValue={editando?.dataInicio.slice(0, 10)}
+              required
+            />
           </label>
           <label>
             Fim
-            <input name="fim" type="date" defaultValue={editando?.dataFim.slice(0, 10)} required />
+            <input
+              name="fim"
+              type="date"
+              defaultValue={editando?.dataFim.slice(0, 10)}
+              required
+            />
           </label>
         </div>
-        <button className="primary">{editando ? "Atualizar evento" : "Salvar evento"}</button>
-        {editando && <button type="button" className="secondary" onClick={() => setEditando(null)}>Cancelar</button>}
+        <button className="primary">
+          {editando ? "Atualizar evento" : "Salvar evento"}
+        </button>
+        {editando && (
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setEditando(null)}
+          >
+            Cancelar
+          </button>
+        )}
       </form>
     </Painel>
   );
@@ -444,13 +513,22 @@ function Equipes({
                 <table>
                   <thead>
                     <tr>
-                      <th>Equipe</th><th>Ações</th>
+                      <th>Equipe</th>
+                      <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     {teams.map((t) => (
                       <tr key={t.id}>
-                        <td>{t.nome}</td><td><button className="secondary" onClick={() => setEditando(t)}>Editar</button></td>
+                        <td>{t.nome}</td>
+                        <td>
+                          <button
+                            className="secondary"
+                            onClick={() => setEditando(t)}
+                          >
+                            Editar
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -461,33 +539,54 @@ function Equipes({
         </div>
       }
     >
-      <form key={editando?.id ?? "novo"}
+      <form
+        key={editando?.id ?? "novo"}
         onSubmit={(event) => {
           event.preventDefault();
           const form = new FormData(event.currentTarget);
           void salvar(
-            () => editando
-              ? atualizarEquipe(editando.id, {
-                  nome: String(form.get("nome")).trim(),
-                  idEvento: editando.idEvento,
-                })
-              : criarEquipe({
-                nome: String(form.get("nome")).trim(),
-                idEvento: number(form.get("evento")),
-              }),
+            () =>
+              editando
+                ? atualizarEquipe(editando.id, {
+                    nome: String(form.get("nome")).trim(),
+                    idEvento: editando.idEvento,
+                  })
+                : criarEquipe({
+                    nome: String(form.get("nome")).trim(),
+                    idEvento: number(form.get("evento")),
+                  }),
             editando ? "Equipe atualizada." : "Equipe cadastrada.",
           );
           setEditando(null);
           event.currentTarget.reset();
         }}
       >
-        {editando ? <p className="hint">Evento: {nome(eventos, editando.idEvento)}</p> : <Select name="evento" label="Evento" items={eventos} />}
+        {editando ? (
+          <p className="hint">Evento: {nome(eventos, editando.idEvento)}</p>
+        ) : (
+          <Select name="evento" label="Evento" items={eventos} />
+        )}
         <label>
           Nome da equipe
-          <input name="nome" maxLength={100} defaultValue={editando?.nome} required />
+          <input
+            name="nome"
+            maxLength={100}
+            defaultValue={editando?.nome}
+            required
+          />
         </label>
-        <button className="primary">{editando ? "Atualizar equipe" : "Salvar equipe"}</button>
-        {editando && <button type="button" className="secondary" onClick={() => setEditando(null)}>Cancelar</button>}
+        <button className="primary">
+          {editando ? "Atualizar equipe" : "Salvar equipe"}
+        </button>
+        {editando && (
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setEditando(null)}
+          >
+            Cancelar
+          </button>
+        )}
       </form>
     </Painel>
   );
@@ -516,7 +615,8 @@ function Categorias({
                     <tr>
                       <th>Categoria</th>
                       <th>Ordem</th>
-                      <th>Status</th><th>Ações</th>
+                      <th>Status</th>
+                      <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -543,7 +643,14 @@ function Categorias({
                             {item.ativo ? "Ativa" : "Inativa"}
                           </button>
                         </td>
-                        <td><button className="secondary" onClick={() => setEditando(item)}>Editar</button></td>
+                        <td>
+                          <button
+                            className="secondary"
+                            onClick={() => setEditando(item)}
+                          >
+                            Editar
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -554,42 +661,69 @@ function Categorias({
         </div>
       }
     >
-      <form key={editando?.id ?? "novo"}
+      <form
+        key={editando?.id ?? "novo"}
         onSubmit={(event) => {
           event.preventDefault();
           const form = new FormData(event.currentTarget);
           void salvar(
-            () => editando
-              ? atualizarCategoria(editando.id, {
-                  nome: String(form.get("nome")).trim(),
-                  idEvento: editando.idEvento,
-                  ordem: number(form.get("ordem")),
-                  ativo: editando.ativo,
-                })
-              : criarCategoria({
-                nome: String(form.get("nome")).trim(),
-                idEvento: number(form.get("evento")),
-                ordem: number(form.get("ordem")),
-              }),
+            () =>
+              editando
+                ? atualizarCategoria(editando.id, {
+                    nome: String(form.get("nome")).trim(),
+                    idEvento: editando.idEvento,
+                    ordem: number(form.get("ordem")),
+                    ativo: editando.ativo,
+                  })
+                : criarCategoria({
+                    nome: String(form.get("nome")).trim(),
+                    idEvento: number(form.get("evento")),
+                    ordem: number(form.get("ordem")),
+                  }),
             editando ? "Categoria atualizada." : "Categoria cadastrada.",
           );
           setEditando(null);
           event.currentTarget.reset();
         }}
       >
-        {editando ? <p className="hint">Evento: {nome(eventos, editando.idEvento)}</p> : <Select name="evento" label="Evento" items={eventos} />}
+        {editando ? (
+          <p className="hint">Evento: {nome(eventos, editando.idEvento)}</p>
+        ) : (
+          <Select name="evento" label="Evento" items={eventos} />
+        )}
         <div className="form-grid">
           <label>
             Nome
-            <input name="nome" maxLength={100} defaultValue={editando?.nome} required />
+            <input
+              name="nome"
+              maxLength={100}
+              defaultValue={editando?.nome}
+              required
+            />
           </label>
           <label>
             Ordem
-            <input name="ordem" type="number" min="1" defaultValue={editando?.ordem} required />
+            <input
+              name="ordem"
+              type="number"
+              min="1"
+              defaultValue={editando?.ordem}
+              required
+            />
           </label>
         </div>
-        <button className="primary">{editando ? "Atualizar categoria" : "Salvar categoria"}</button>
-        {editando && <button type="button" className="secondary" onClick={() => setEditando(null)}>Cancelar</button>}
+        <button className="primary">
+          {editando ? "Atualizar categoria" : "Salvar categoria"}
+        </button>
+        {editando && (
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setEditando(null)}
+          >
+            Cancelar
+          </button>
+        )}
       </form>
     </Painel>
   );
@@ -630,7 +764,8 @@ function Criterios({
                           <tr>
                             <th>Critério</th>
                             <th>Ordem</th>
-                            <th>Status</th><th>Ações</th>
+                            <th>Status</th>
+                            <th>Ações</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -657,7 +792,14 @@ function Criterios({
                                   {item.ativo ? "Ativo" : "Inativo"}
                                 </button>
                               </td>
-                              <td><button className="secondary" onClick={() => setEditando(item)}>Editar</button></td>
+                              <td>
+                                <button
+                                  className="secondary"
+                                  onClick={() => setEditando(item)}
+                                >
+                                  Editar
+                                </button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -671,42 +813,71 @@ function Criterios({
         </div>
       }
     >
-      <form key={editando?.id ?? "novo"}
+      <form
+        key={editando?.id ?? "novo"}
         onSubmit={(event) => {
           event.preventDefault();
           const form = new FormData(event.currentTarget);
           void salvar(
-            () => editando
-              ? atualizarCriterio(editando.id, {
-                  nome: String(form.get("nome")).trim(),
-                  idCategoria: editando.idCategoria,
-                  ordem: number(form.get("ordem")),
-                  ativo: editando.ativo,
-                })
-              : criarCriterio({
-                nome: String(form.get("nome")).trim(),
-                idCategoria: number(form.get("categoria")),
-                ordem: number(form.get("ordem")),
-              }),
+            () =>
+              editando
+                ? atualizarCriterio(editando.id, {
+                    nome: String(form.get("nome")).trim(),
+                    idCategoria: editando.idCategoria,
+                    ordem: number(form.get("ordem")),
+                    ativo: editando.ativo,
+                  })
+                : criarCriterio({
+                    nome: String(form.get("nome")).trim(),
+                    idCategoria: number(form.get("categoria")),
+                    ordem: number(form.get("ordem")),
+                  }),
             editando ? "Critério atualizado." : "Critério cadastrado.",
           );
           setEditando(null);
           event.currentTarget.reset();
         }}
       >
-        {editando ? <p className="hint">Categoria: {nome(categorias, editando.idCategoria)}</p> : <Select name="categoria" label="Categoria" items={categorias} />}
+        {editando ? (
+          <p className="hint">
+            Categoria: {nome(categorias, editando.idCategoria)}
+          </p>
+        ) : (
+          <Select name="categoria" label="Categoria" items={categorias} />
+        )}
         <div className="form-grid">
           <label>
             Nome
-            <input name="nome" maxLength={100} defaultValue={editando?.nome} required />
+            <input
+              name="nome"
+              maxLength={100}
+              defaultValue={editando?.nome}
+              required
+            />
           </label>
           <label>
             Ordem
-            <input name="ordem" type="number" min="1" defaultValue={editando?.ordem} required />
+            <input
+              name="ordem"
+              type="number"
+              min="1"
+              defaultValue={editando?.ordem}
+              required
+            />
           </label>
         </div>
-        <button className="primary">{editando ? "Atualizar critério" : "Salvar critério"}</button>
-        {editando && <button type="button" className="secondary" onClick={() => setEditando(null)}>Cancelar</button>}
+        <button className="primary">
+          {editando ? "Atualizar critério" : "Salvar critério"}
+        </button>
+        {editando && (
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setEditando(null)}
+          >
+            Cancelar
+          </button>
+        )}
       </form>
     </Painel>
   );
@@ -741,7 +912,8 @@ function Jurados({
                 <thead>
                   <tr>
                     <th>Jurado</th>
-                    <th>Status</th><th>Ações</th>
+                    <th>Status</th>
+                    <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -770,7 +942,14 @@ function Jurados({
                           {item.ativo ? "Ativo" : "Inativo"}
                         </button>
                       </td>
-                      <td><button className="secondary" onClick={() => setEditando(item)}>Editar</button></td>
+                      <td>
+                        <button
+                          className="secondary"
+                          onClick={() => setEditando(item)}
+                        >
+                          Editar
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -784,8 +963,16 @@ function Jurados({
         {jurados.map((j) => {
           const atribuicoes = vinculacoes
             .filter((v) => v.idJurado === j.id)
-            .map((v) => ({ vinculo: v, categoria: categorias.find((c) => c.id === v.idCategoria) }))
-            .filter((item): item is { vinculo: JuradoCategoria; categoria: Categoria } => Boolean(item.categoria));
+            .map((v) => ({
+              vinculo: v,
+              categoria: categorias.find((c) => c.id === v.idCategoria),
+            }))
+            .filter(
+              (
+                item,
+              ): item is { vinculo: JuradoCategoria; categoria: Categoria } =>
+                Boolean(item.categoria),
+            );
           return (
             <div key={j.id} className="group">
               <h4>
@@ -794,12 +981,24 @@ function Jurados({
               <ul>
                 {atribuicoes.map(({ vinculo, categoria }) => (
                   <li key={vinculo.id}>
-                    {categoria.nome} ({nome(eventos, categoria.idEvento)}) {" "}
-                    <button className="link" onClick={() => {
-                      if (window.confirm(`Remover a categoria ${categoria.nome}, suas avaliações e as notas deste jurado?`)) {
-                        void salvar(() => excluirJuradoCategoria(vinculo.id), "Categoria, avaliações e notas vinculadas removidas.");
-                      }
-                    }}>Excluir</button>
+                    {categoria.nome} ({nome(eventos, categoria.idEvento)}){" "}
+                    <button
+                      className="link"
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            `Remover a categoria ${categoria.nome}, suas avaliações e as notas deste jurado?`,
+                          )
+                        ) {
+                          void salvar(
+                            () => excluirJuradoCategoria(vinculo.id),
+                            "Categoria, avaliações e notas vinculadas removidas.",
+                          );
+                        }
+                      }}
+                    >
+                      Excluir
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -829,40 +1028,66 @@ function Jurados({
         lista={lista}
       >
         {modo === "jurado" ? (
-          <form key={editando?.id ?? "novo"}
+          <form
+            key={editando?.id ?? "novo"}
             onSubmit={(event) => {
               event.preventDefault();
               const form = new FormData(event.currentTarget);
               void salvar(
-                () => editando
-                  ? atualizarJurado(editando.id, {
-                      nome: String(form.get("nome")).trim(),
-                      login: String(form.get("login")).trim(),
-                      idEvento: editando.idEvento,
-                      ativo: editando.ativo,
-                    })
-                  : criarJurado({
-                    nome: String(form.get("nome")).trim(),
-                    login: String(form.get("login")).trim(),
-                    idEvento: number(form.get("evento")),
-                  }),
+                () =>
+                  editando
+                    ? atualizarJurado(editando.id, {
+                        nome: String(form.get("nome")).trim(),
+                        login: String(form.get("login")).trim(),
+                        idEvento: editando.idEvento,
+                        ativo: editando.ativo,
+                      })
+                    : criarJurado({
+                        nome: String(form.get("nome")).trim(),
+                        login: String(form.get("login")).trim(),
+                        idEvento: number(form.get("evento")),
+                      }),
                 editando ? "Jurado atualizado." : "Jurado cadastrado.",
               );
               setEditando(null);
               event.currentTarget.reset();
             }}
           >
-            {editando ? <p className="hint">Evento: {nome(eventos, editando.idEvento)}</p> : <Select name="evento" label="Evento" items={eventos} />}
+            {editando ? (
+              <p className="hint">Evento: {nome(eventos, editando.idEvento)}</p>
+            ) : (
+              <Select name="evento" label="Evento" items={eventos} />
+            )}
             <label>
               Nome
-              <input name="nome" maxLength={100} defaultValue={editando?.nome} required />
+              <input
+                name="nome"
+                maxLength={100}
+                defaultValue={editando?.nome}
+                required
+              />
             </label>
             <label>
               Login
-              <input name="login" maxLength={100} defaultValue={editando?.login} required />
+              <input
+                name="login"
+                maxLength={100}
+                defaultValue={editando?.login}
+                required
+              />
             </label>
-            <button className="primary">{editando ? "Atualizar jurado" : "Salvar jurado"}</button>
-            {editando && <button type="button" className="secondary" onClick={() => setEditando(null)}>Cancelar</button>}
+            <button className="primary">
+              {editando ? "Atualizar jurado" : "Salvar jurado"}
+            </button>
+            {editando && (
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setEditando(null)}
+              >
+                Cancelar
+              </button>
+            )}
           </form>
         ) : (
           <form
@@ -965,7 +1190,8 @@ function Pontuacao({
                                 onChange={(e) =>
                                   setFormState({
                                     ...formState,
-                                    tipo: e.target.value as MovimentacaoPontuacao["tipo"],
+                                    tipo: e.target
+                                      .value as MovimentacaoPontuacao["tipo"],
                                   })
                                 }
                               >
@@ -1169,7 +1395,8 @@ function Relatorios({ eventos }: { eventos: Evento[] }) {
           {relatorio.equipes.length === 0 ? (
             <section className="card">
               <p className="muted">
-                Não há equipes, categorias e critérios configurados para este evento.
+                Não há equipes, categorias e critérios configurados para este
+                evento.
               </p>
             </section>
           ) : (
@@ -1212,7 +1439,10 @@ function CategoryRows({
       {categoria.criterios.map((criterio, index) => (
         <tr key={criterio.id}>
           {index === 0 && (
-            <td rowSpan={categoria.criterios.length + 1} className="report-category">
+            <td
+              rowSpan={categoria.criterios.length + 1}
+              className="report-category"
+            >
               <strong>{categoria.nome}</strong>
               <small>Total: {categoria.totalNotas}</small>
             </td>
