@@ -10,6 +10,7 @@ import type {
   JuradoCategoria,
   MovimentacaoPontuacao,
   Nota,
+  RelatorioEvento,
 } from "../types/Eventos";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000/api";
@@ -52,6 +53,8 @@ export const listarAvaliacoes = () => apiFetch<Avaliacao[]>("/avaliacoes");
 export const listarNotas = () => apiFetch<Nota[]>("/notas");
 export const listarMovimentacoes = () =>
   apiFetch<MovimentacaoPontuacao[]>("/movimentacoes-pontuacao");
+export const buscarRelatorioEvento = (eventoId: number) =>
+  apiFetch<RelatorioEvento>(`/relatorios/eventos/${eventoId}`);
 
 export const criarEvento = (dados: Omit<Evento, "id" | "ativo">) =>
   apiFetch<Evento>("/eventos", { method: "POST", body: JSON.stringify(dados) });
@@ -62,6 +65,11 @@ export const atualizarEvento = (id: number, dados: Omit<Evento, "id">) =>
   });
 export const criarEquipe = (dados: Omit<Equipe, "id">) =>
   apiFetch<Equipe>("/equipes", { method: "POST", body: JSON.stringify(dados) });
+export const atualizarEquipe = (id: number, dados: Omit<Equipe, "id">) =>
+  apiFetch<Equipe>(`/equipes/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(dados),
+  });
 export const criarCategoria = (dados: Omit<Categoria, "id" | "ativo">) =>
   apiFetch<Categoria>("/categorias", {
     method: "POST",
@@ -94,16 +102,21 @@ export const criarJuradoCategoria = (dados: Omit<JuradoCategoria, "id">) =>
     method: "POST",
     body: JSON.stringify(dados),
   });
-export const criarAvaliacao = (dados: Omit<Avaliacao, "id">) =>
-  apiFetch<Avaliacao>("/avaliacoes", {
-    method: "POST",
-    body: JSON.stringify(dados),
-  });
+export const excluirJuradoCategoria = (id: number) =>
+  apiFetch<void>(`/jurado-categorias/${id}`, { method: "DELETE" });
 export const criarMovimentacao = (
   dados: Omit<MovimentacaoPontuacao, "id" | "dataLancamento">,
 ) =>
   apiFetch<MovimentacaoPontuacao>("/movimentacoes-pontuacao", {
     method: "POST",
+    body: JSON.stringify(dados),
+  });
+export const atualizarMovimentacao = (
+  id: number,
+  dados: Omit<MovimentacaoPontuacao, "id" | "dataLancamento">,
+) =>
+  apiFetch<MovimentacaoPontuacao>(`/movimentacoes-pontuacao/${id}`, {
+    method: "PUT",
     body: JSON.stringify(dados),
   });
 export const criarNota = (dados: Omit<Nota, "id">) =>

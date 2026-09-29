@@ -55,3 +55,30 @@ export type MovimentacaoPontuacao = {
   pontos: number;
   dataLancamento: string;
 };
+
+export type CriterioRelatorio = {
+  id: number;
+  nome: string;
+  ordem: number;
+  totalNotas: number;
+};
+
+export type CategoriaRelatorio = {
+  id: number;
+  nome: string;
+  ordem: number;
+  criterios: CriterioRelatorio[];
+  totalNotas: number;
+};
+
+export type EquipeRelatorio = {
+  id: number;
+  nome: string;
+  categorias: CategoriaRelatorio[];
+  totalNotas: number;
+};
+
+export type RelatorioEvento = {
+  eventoId: number;
+  equipes: EquipeRelatorio[];
+};

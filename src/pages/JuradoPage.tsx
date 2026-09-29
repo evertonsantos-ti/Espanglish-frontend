@@ -40,7 +40,8 @@ const vazio: Dados = {
 export function JuradoPage() {
   const navigate = useNavigate();
   const [dados, setDados] = useState<Dados>(vazio);
-  const [avaliacaoId, setAvaliacaoId] = useState("");
+  const [categoriaId, setCategoriaId] = useState("");
+  const [equipeId, setEquipeId] = useState("");
   const [valores, setValores] = useState<Record<number, string>>({});
   const [erro, setErro] = useState("");
   const [aviso, setAviso] = useState("");
@@ -73,9 +74,33 @@ export function JuradoPage() {
     void Promise.resolve().then(carregar);
   }, [carregar]);
 
+  const categoriasDisponiveis = useMemo(() => {
+    const categoriasAtribuidas = new Set(
+      dados.avaliacoes.map((item) => item.idCategoria),
+    );
+    return dados.categorias
+      .filter((item) => categoriasAtribuidas.has(item.id))
+      .sort((a, b) => a.ordem - b.ordem || a.nome.localeCompare(b.nome));
+  }, [dados.avaliacoes, dados.categorias]);
+  const equipesDisponiveis = useMemo(() => {
+    if (!categoriaId) return [];
+    const equipesAtribuidas = new Set(
+      dados.avaliacoes
+        .filter((item) => item.idCategoria === Number(categoriaId))
+        .map((item) => item.idEquipe),
+    );
+    return dados.equipes
+      .filter((item) => equipesAtribuidas.has(item.id))
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  }, [categoriaId, dados.avaliacoes, dados.equipes]);
   const avaliacao = useMemo(
-    () => dados.avaliacoes.find((item) => item.id === Number(avaliacaoId)),
-    [dados.avaliacoes, avaliacaoId],
+    () =>
+      dados.avaliacoes.find(
+        (item) =>
+          item.idCategoria === Number(categoriaId) &&
+          item.idEquipe === Number(equipeId),
+      ),
+    [categoriaId, dados.avaliacoes, equipeId],
   );
   const criterios = useMemo(
     () =>
@@ -115,10 +140,16 @@ export function JuradoPage() {
     }));
     if (
       notas.some(
-        ({ valor }) => !Number.isFinite(valor) || valor < 0 || valor > 100,
+        ({ valor }) =>
+          !Number.isFinite(valor) ||
+          valor < 0 ||
+          valor > 100 ||
+          valor % 5 !== 0,
       )
     )
-      return setErro("Preencha todos os critérios com uma nota de 0 a 100.");
+      return setErro(
+        "Preencha todos os critérios com uma nota de 0 a 100, em múltiplos de 5.",
+      );
     try {
       await Promise.all(
         notas.map(async ({ criterio, valor }) => {
@@ -178,37 +209,55 @@ export function JuradoPage() {
       ) : (
         <section className="jury-layout">
           <section className="card">
-            <h2>Selecione uma avaliação</h2>
+            <h2>Selecione a categoria e a equipe</h2>
             {dados.avaliacoes.length === 0 ? (
               <p className="muted">
-                Não há avaliações atribuídas a você. Solicite a criação ao
+                Não há categorias atribuídas a você. Solicite a atribuição ao
                 administrador.
               </p>
             ) : (
-              <label>
-                Avaliação
-                <select
-                  value={avaliacaoId}
-                  onChange={(event) => setAvaliacaoId(event.target.value)}
-                >
-                  <option value="">Selecione a equipe e categoria</option>
-                  {dados.avaliacoes.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {dados.equipes.find(
-                        (equipe) => equipe.id === item.idEquipe,
-                      )?.nome ?? `Equipe #${item.idEquipe}`}{" "}
-                      —{" "}
-                      {dados.categorias.find(
-                        (categoria) => categoria.id === item.idCategoria,
-                      )?.nome ?? `Categoria #${item.idCategoria}`}
+              <>
+                <label>
+                  Categoria
+                  <select
+                    value={categoriaId}
+                    onChange={(event) => {
+                      setCategoriaId(event.target.value);
+                      setEquipeId("");
+                    }}
+                  >
+                    <option value="">Selecione uma categoria</option>
+                    {categoriasDisponiveis.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.nome}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Equipe
+                  <select
+                    value={equipeId}
+                    disabled={!categoriaId}
+                    onChange={(event) => setEquipeId(event.target.value)}
+                  >
+                    <option value="">
+                      {categoriaId
+                        ? "Selecione uma equipe"
+                        : "Selecione a categoria primeiro"}
                     </option>
-                  ))}
-                </select>
-              </label>
+                    {equipesDisponiveis.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.nome}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </>
             )}
             <p className="hint">
-              Cada nota vai de 0 a 100. Os lançamentos ficam vinculados apenas
-              às suas avaliações.
+              A categoria permanece selecionada quando você troca de equipe.
+              Cada nota vai de 0 a 100, em múltiplos de 5.
             </p>
           </section>
           {avaliacao && (
@@ -241,7 +290,7 @@ export function JuradoPage() {
                         type="number"
                         min="0"
                         max="100"
-                        step="1"
+                        step="5"
                         inputMode="numeric"
                         value={valores[criterio.id] ?? ""}
                         onChange={(event) =>
