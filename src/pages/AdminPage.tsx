@@ -22,6 +22,9 @@ import {
   criarJurado,
   criarJuradoCategoria,
   criarMovimentacao,
+  criarUsuario,
+  atualizarUsuario,
+  excluirUsuario,
   excluirJuradoCategoria,
   atualizarMovimentacao,
   listarCategorias,
@@ -30,6 +33,7 @@ import {
   listarJuradoCategorias,
   listarJurados,
   listarMovimentacoes,
+  listarUsuarios,
 } from "../services/api";
 import type {
   Categoria,
@@ -41,6 +45,7 @@ import type {
   MovimentacaoPontuacao,
   RelatorioEvento,
 } from "../types/Eventos";
+import type { Usuario } from "../types/Usuario";
 
 type Dados = {
   eventos: Evento[];
@@ -48,6 +53,7 @@ type Dados = {
   categorias: Categoria[];
   criterios: Criterio[];
   jurados: Jurado[];
+  usuarios: Usuario[];
   vinculacoes: JuradoCategoria[];
   movimentacoes: MovimentacaoPontuacao[];
 };
@@ -57,6 +63,7 @@ const vazio: Dados = {
   categorias: [],
   criterios: [],
   jurados: [],
+  usuarios: [],
   vinculacoes: [],
   movimentacoes: [],
 };
@@ -87,6 +94,7 @@ export function AdminPage() {
         categorias,
         criterios,
         jurados,
+        usuarios,
         vinculacoes,
         movimentacoes,
       ] = await Promise.all([
@@ -95,6 +103,7 @@ export function AdminPage() {
         listarCategorias(),
         listarCriterios(),
         listarJurados(),
+        listarUsuarios(),
         listarJuradoCategorias(),
         listarMovimentacoes(),
       ]);
@@ -104,6 +113,7 @@ export function AdminPage() {
         categorias,
         criterios,
         jurados,
+        usuarios,
         vinculacoes,
         movimentacoes,
       });
@@ -165,6 +175,7 @@ export function AdminPage() {
         categoriaIds.has(criterio.idCategoria),
       ),
       jurados,
+      usuarios: dados.usuarios,
       vinculacoes: dados.vinculacoes.filter(
         (vinculo) =>
           juradoIds.has(vinculo.idJurado) ||
@@ -211,6 +222,7 @@ export function AdminPage() {
           ["categorias", "Categorias"],
           ["criterios", "Critérios"],
           ["jurados", "Jurados"],
+          ["usuarios", "Usuários"],
           ["pontuacao", "Pontuação"],
           ["relatorios", "Relatórios"],
         ].map(([id, label]) => (
@@ -279,6 +291,9 @@ export function AdminPage() {
               salvar={salvar}
             />
           )}
+          {aba === "usuarios" && (
+            <Usuarios usuarios={dados.usuarios} salvar={salvar} />
+          )}
           {aba === "pontuacao" && (
             <Pontuacao
               eventos={eventosAtivos}
@@ -293,6 +308,128 @@ export function AdminPage() {
         </section>
       )}
     </main>
+  );
+}
+
+function Usuarios({
+  usuarios,
+  salvar,
+}: { usuarios: Usuario[] } & AdminPageProps) {
+  const [editando, setEditando] = useState<Usuario | null>(null);
+
+  return (
+    <Painel
+      titulo="Usuários administradores"
+      lista={
+        <table>
+          <thead>
+            <tr>
+              <th>Nome de acesso</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {usuarios.length === 0 ? (
+              <tr>
+                <td colSpan={2}>Nenhum usuário cadastrado.</td>
+              </tr>
+            ) : (
+              usuarios.map((usuario) => (
+                <tr key={usuario.id}>
+                  <td>{usuario.nome}</td>
+                  <td className="table-actions">
+                    <button
+                      className="secondary"
+                      onClick={() => setEditando(usuario)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="danger"
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            `Excluir o usuário administrador “${usuario.nome}”?`,
+                          )
+                        ) {
+                          void salvar(
+                            () => excluirUsuario(usuario.id),
+                            "Usuário excluído.",
+                          );
+                        }
+                      }}
+                    >
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      }
+    >
+      <form
+        key={editando?.id ?? "novo"}
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = new FormData(event.currentTarget);
+          const nome = String(form.get("nome")).trim();
+          const senha = String(form.get("senha") ?? "");
+
+          void salvar(
+            () =>
+              editando
+                ? atualizarUsuario(editando.id, {
+                    nome,
+                    ...(senha ? { senha } : {}),
+                  })
+                : criarUsuario({ nome, senha }),
+            editando ? "Usuário atualizado." : "Usuário criado com sucesso.",
+          ).then(() => {
+            setEditando(null);
+            event.currentTarget.reset();
+          });
+        }}
+      >
+        <label>
+          Nome de acesso
+          <input
+            name="nome"
+            maxLength={100}
+            defaultValue={editando?.nome}
+            autoComplete="username"
+            required
+          />
+        </label>
+        <label>
+          {editando ? "Nova senha (opcional)" : "Senha"}
+          <input
+            name="senha"
+            type="password"
+            minLength={6}
+            maxLength={100}
+            autoComplete="new-password"
+            required={!editando}
+          />
+          {editando && (
+            <span className="hint">Preencha apenas para trocar a senha.</span>
+          )}
+        </label>
+        <button className="primary">
+          {editando ? "Atualizar usuário" : "Salvar usuário"}
+        </button>
+        {editando && (
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setEditando(null)}
+          >
+            Cancelar
+          </button>
+        )}
+      </form>
+    </Painel>
   );
 }
 

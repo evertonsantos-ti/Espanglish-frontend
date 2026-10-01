@@ -1,6 +1,11 @@
 import * as auth from "../auth/auth";
 import type { LoginResponse } from "../types/Auth";
 import type {
+  AtualizarUsuario,
+  CriarUsuario,
+  Usuario,
+} from "../types/Usuario";
+import type {
   Avaliacao,
   Categoria,
   Criterio,
@@ -47,6 +52,7 @@ export const listarEquipes = () => apiFetch<Equipe[]>("/equipes");
 export const listarCategorias = () => apiFetch<Categoria[]>("/categorias");
 export const listarCriterios = () => apiFetch<Criterio[]>("/criterios");
 export const listarJurados = () => apiFetch<Jurado[]>("/jurados");
+export const listarUsuarios = () => apiFetch<Usuario[]>("/usuarios");
 export const listarJuradoCategorias = () =>
   apiFetch<JuradoCategoria[]>("/jurado-categorias");
 export const listarAvaliacoes = () => apiFetch<Avaliacao[]>("/avaliacoes");
@@ -97,6 +103,18 @@ export const atualizarJurado = (id: number, dados: Omit<Jurado, "id">) =>
     method: "PUT",
     body: JSON.stringify(dados),
   });
+export const criarUsuario = (dados: CriarUsuario) =>
+  apiFetch<Usuario>("/usuarios", {
+    method: "POST",
+    body: JSON.stringify(dados),
+  });
+export const atualizarUsuario = (id: number, dados: AtualizarUsuario) =>
+  apiFetch<Usuario>(`/usuarios/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(dados),
+  });
+export const excluirUsuario = (id: number) =>
+  apiFetch<void>(`/usuarios/${id}`, { method: "DELETE" });
 export const criarJuradoCategoria = (dados: Omit<JuradoCategoria, "id">) =>
   apiFetch<JuradoCategoria>("/jurado-categorias", {
     method: "POST",

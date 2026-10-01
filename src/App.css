@@ -110,6 +110,19 @@ select:focus {
   background-color: var(--button-hover);
   color: var(--secondary-color);
 }
+.danger {
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-weight: 700;
+  background: #ffe9ed;
+  color: #9d243a;
+}
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .link {
   border: 0;
   background: transparent;
